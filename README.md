@@ -1,4 +1,4 @@
-# 🏗️ CI-Agnostic Build Agent Framework
+# CI-Agnostic Build Agent Framework
 
 ### A self-hosted build agent framework that works across
 ### Azure Pipelines · GitHub Actions · TeamCity — without changing your agent code
@@ -13,11 +13,6 @@
 ![Azure Pipelines](https://img.shields.io/badge/Azure_Pipelines-0078D4?style=for-the-badge&logo=azure-devops&logoColor=white)
 
 <br/>
-
-![CI](https://github.com/YOUR_USERNAME/ci-agnostic-build-agent-framework/actions/workflows/ci.yml/badge.svg)
-![Molecule Tests](https://github.com/YOUR_USERNAME/ci-agnostic-build-agent-framework/actions/workflows/molecule-test.yml/badge.svg)
-![License](https://img.shields.io/github/license/YOUR_USERNAME/ci-agnostic-build-agent-framework)
-![Stars](https://img.shields.io/github/stars/YOUR_USERNAME/ci-agnostic-build-agent-framework?style=social)
 
 </div>
 

@@ -103,7 +103,7 @@ graph TB
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/YOUR_USERNAME/ci-agnostic-build-agent-framework.git
+git clone https://github.com/megha910825/ci-agnostic-build-agent-framework.git
 cd ci-agnostic-build-agent-framework
 ```
 

@@ -1,0 +1,40 @@
+name: Molecule Tests
+
+on:
+  push:
+    branches: [main]
+    paths: ['ansible/**']
+  pull_request:
+    branches: [main]
+    paths: ['ansible/**']
+
+jobs:
+  molecule:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        role:
+          - agent-setup
+          - docker-install
+          - agent-hardening
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Molecule + dependencies
+        run: |
+          pip install molecule molecule-docker ansible pytest
+
+      - name: Run Molecule tests for ${{ matrix.role }}
+        run: |
+          cd ansible
+          molecule test --scenario-name ${{ matrix.role }}
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'

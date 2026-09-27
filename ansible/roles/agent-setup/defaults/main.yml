@@ -1,0 +1,28 @@
+---
+# CI System — override this per environment
+# Options: github-actions | azure-pipelines | teamcity
+ci_system: github-actions
+
+# Agent settings
+agent_user: build-agent
+agent_work_dir: /opt/build-agent
+agent_version: "3.227.1"
+
+# Docker settings
+docker_enabled: true
+docker_version: "24.0"
+
+# Security hardening
+harden_agent: true
+agent_readonly_fs: false
+
+# Download URLs per CI system
+agent_download_url:
+  github-actions: >
+    https://github.com/actions/runner/releases/download/
+    v{{ agent_version }}/actions-runner-linux-x64-{{ agent_version }}.tar.gz
+  azure-pipelines: >
+    https://vstsagentpackage.azureedge.net/agent/
+    {{ agent_version }}/vsts-agent-linux-x64-{{ agent_version }}.tar.gz
+  teamcity: >
+    https://your-teamcity-server/update/buildAgentFull.zip

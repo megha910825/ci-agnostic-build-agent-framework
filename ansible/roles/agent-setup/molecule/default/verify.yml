@@ -1,0 +1,48 @@
+---
+- name: Verify agent setup
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Check agent service is running
+      ansible.builtin.systemd:
+        name: build-agent
+      register: agent_service
+      failed_when: agent_service.status.ActiveState != 'active'
+
+    - name: Check Docker daemon is running
+      ansible.builtin.systemd:
+        name: docker
+      register: docker_service
+      failed_when: docker_service.status.ActiveState != 'active'
+
+    - name: Check agent user exists
+      ansible.builtin.getent:
+        database: passwd
+        key: build-agent
+      register: agent_user
+      failed_when: agent_user is not defined
+
+    - name: Check agent work directory exists
+      ansible.builtin.stat:
+        path: /opt/build-agent
+      register: work_dir
+      failed_when: not work_dir.stat.exists
+
+    - name: Check agent config exists
+      ansible.builtin.stat:
+        path: /opt/build-agent/.agent-config
+      register: agent_config
+      failed_when: not agent_config.stat.exists
+
+    - name: Verify config permissions are secure
+      ansible.builtin.stat:
+        path: /opt/build-agent/.agent-config
+      register: config_perms
+      failed_when: config_perms.stat.mode != '0600'
+
+    - name: Check agent binary is executable
+      ansible.builtin.stat:
+        path: /opt/build-agent/run.sh
+      register: agent_binary
+      failed_when: not agent_binary.stat.executable

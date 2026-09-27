@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  base:
+    build:
+      context: ./agents/base
+      dockerfile: Dockerfile
+    image: build-agent:base
+
+  python:
+    build:
+      context: ./agents/python
+      dockerfile: Dockerfile
+    image: build-agent:python
+    depends_on:
+      - base
+
+  node:
+    build:
+      context: ./agents/node
+      dockerfile: Dockerfile
+    image: build-agent:node
+    depends_on:
+      - base
+
+  java:
+    build:
+      context: ./agents/java
+      dockerfile: Dockerfile
+    image: build-agent:java
+    depends_on:
+      - base
+

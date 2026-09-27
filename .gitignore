@@ -1,0 +1,52 @@
+# Python virtual environment — NEVER commit this
+venv/
+.venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Pip config
+.pip/
+*.log
+
+# Pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Molecule temporary files
+.molecule/
+molecule/.cache/
+
+# Ansible retry files
+*.retry
+
+# Docker
+.dockerignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment variables — NEVER commit secrets
+.env
+.env.*
+*.env
+
+# Terraform (for later projects)
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# OS files
+Thumbs.db

@@ -1,0 +1,12 @@
+molecule==6.0.3            # test Ansible roles
+molecule-docker==2.1.0     # Molecule's Docker driver
+ansible-lint==6.22.2       # lint Ansible YAML
+pytest==8.0.0              # run Python unit tests
+pytest-testinfra==10.1.1   # test infrastructure with Python
+
+
+# Code quality
+black==24.1.1
+flake8==7.0.0
+PyYAML==6.0.1
+rich==13.7.0

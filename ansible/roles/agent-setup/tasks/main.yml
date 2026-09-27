@@ -1,0 +1,57 @@
+---
+- name: Create agent service user
+  ansible.builtin.user:
+    name: "{{ agent_user }}"
+    system: true
+    shell: /bin/bash
+    create_home: true
+    groups: docker
+  become: true
+
+- name: Create agent working directory
+  ansible.builtin.file:
+    path: "{{ agent_work_dir }}"
+    state: directory
+    owner: "{{ agent_user }}"
+    mode: '0755'
+  become: true
+
+- name: Download agent binary
+  ansible.builtin.get_url:
+    url: "{{ agent_download_url[ci_system] }}"
+    dest: "{{ agent_work_dir }}/agent.tar.gz"
+    mode: '0644'
+  become: true
+
+- name: Extract agent binary
+  ansible.builtin.unarchive:
+    src: "{{ agent_work_dir }}/agent.tar.gz"
+    dest: "{{ agent_work_dir }}"
+    remote_src: true
+    owner: "{{ agent_user }}"
+  become: true
+
+- name: Generate agent configuration
+  ansible.builtin.template:
+    src: agent.conf.j2
+    dest: "{{ agent_work_dir }}/.agent-config"
+    owner: "{{ agent_user }}"
+    mode: '0600'
+  become: true
+  notify: restart agent service
+
+- name: Configure agent as systemd service
+  ansible.builtin.template:
+    src: agent.service.j2
+    dest: /etc/systemd/system/build-agent.service
+    mode: '0644'
+  become: true
+  notify: restart agent service
+
+- name: Enable and start agent service
+  ansible.builtin.systemd:
+    name: build-agent
+    enabled: true
+    state: started
+    daemon_reload: true
+  become: true

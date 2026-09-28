@@ -1,11 +1,6 @@
-# Inherit base
--r ../base/requirements.txt
-
-# Testing
-pytest==8.0.0
-pytest-cov==4.1.0
-
-# Code quality
-black==24.1.1
-flake8==7.0.0
-isort==5.13.2
+# Python agent specific extras
+# Base packages already installed in build-agent:base image
+# DO NOT reference ../base/requirements.txt here — that path doesn't exist inside Docker
+pylint
+bandit
+mypy

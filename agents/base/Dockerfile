@@ -44,6 +44,7 @@ WORKDIR /home/agent
 COPY requirements.txt .
 # Install with SSL verification disabled for corporate network
 RUN pip3 install --no-cache-dir \
+    --index-url https://pypi.org/simple/ \
     --trusted-host pypi.org \
     --trusted-host files.pythonhosted.org \
     --trusted-host pypi.python.org \

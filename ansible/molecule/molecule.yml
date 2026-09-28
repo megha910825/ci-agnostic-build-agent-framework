@@ -1,0 +1,199 @@
+mkdir -p ansible/roles/docker-install/tasks
+
+cat > ansible/roles/docker-install/tasks/main.yml << 'EOF'
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: true
+  become: true
+
+- name: Add Docker GPG key
+  ansible.builtin.shell: |
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+    | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/docker-archive-keyring.gpg
+  become: true
+
+- name: Add Docker apt repository
+  ansible.builtin.apt_repository:
+    repo: >
+      deb [arch=amd64
+      signed-by=/usr/share/keyrings/docker-archive-keyring.gpg]
+      https://download.docker.com/linux/ubuntu
+      {{ ansible_distribution_release }} stable
+    state: present
+    filename: docker
+  become: true
+
+- name: Install Docker CE
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+    update_cache: true
+  become: true
+
+- name: Add agent user to docker group
+  ansible.builtin.user:
+    name: "{{ agent_user | default('build-agent') }}"
+    groups: docker
+    append: true
+  become: true
+
+- name: Enable and start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+  become: true
+EOF
+3️⃣ Agent Hardening Role
+mkdir -p ansible/roles/agent-hardening/tasks
+
+cat > ansible/roles/agent-hardening/tasks/main.yml << 'EOF'
+---
+- name: Disable SSH password authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  become: true
+  notify: restart sshd
+
+- name: Set agent directory permissions
+  ansible.builtin.file:
+    path: "{{ agent_work_dir | default('/opt/build-agent') }}"
+    owner: "{{ agent_user | default('build-agent') }}"
+    group: "{{ agent_user | default('build-agent') }}"
+    mode: '0750'
+    recurse: true
+  become: true
+
+- name: Restrict agent config file permissions
+  ansible.builtin.file:
+    path: "{{ agent_work_dir | default('/opt/build-agent') }}/.agent-config"
+    owner: "{{ agent_user | default('build-agent') }}"
+    mode: '0600'
+  become: true
+  ignore_errors: true
+
+- name: Install fail2ban for brute force protection
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+    update_cache: true
+  become: true
+
+- name: Enable fail2ban service
+  ansible.builtin.systemd:
+    name: fail2ban
+    enabled: true
+    state: started
+  become: true
+
+- name: Set up UFW firewall — allow SSH only
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+  become: true
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled
+    policy: deny
+  become: true
+EOF
+
+# Handlers for hardening role
+mkdir -p ansible/roles/agent-hardening/handlers
+
+cat > ansible/roles/agent-hardening/handlers/main.yml << 'EOF'
+---
+- name: restart sshd
+  ansible.builtin.systemd:
+    name: sshd
+    state: restarted
+  become: true
+EOF
+4️⃣ Main Playbook
+cat > ansible/playbook.yml << 'EOF'
+---
+- name: Provision CI Build Agent
+  hosts: build_agents
+  become: true
+  gather_facts: true
+
+  vars:
+    ci_system: "{{ ci_system | default('github-actions') }}"
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      become: true
+
+  roles:
+    - role: docker-install
+      tags: [docker]
+
+    - role: agent-setup
+      tags: [agent]
+
+    - role: agent-hardening
+      tags: [hardening]
+      when: harden_agent | default(true)
+
+  post_tasks:
+    - name: Verify agent service is running
+      ansible.builtin.systemd:
+        name: build-agent
+      register: agent_service
+      failed_when: agent_service.status.ActiveState != 'active'
+
+    - name: Print agent status
+      ansible.builtin.debug:
+        msg: "✅ Build agent provisioned successfully on {{ inventory_hostname }}"
+EOF
+5️⃣ Molecule Tests
+cat > ansible/molecule/molecule.yml << 'EOF'
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+platforms:
+  - name: agent-test-ubuntu
+    image: ubuntu:22.04
+    pre_build_image: true
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    command: /sbin/init
+    override_command: false
+
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: prepare.yml
+    converge: converge.yml
+    verify: verify.yml
+  env:
+    ANSIBLE_ROLES_PATH: ../roles
+
+verifier:
+  name: ansible

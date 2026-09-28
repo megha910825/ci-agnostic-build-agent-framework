@@ -1,0 +1,20 @@
+---
+- name: Prepare test container
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Wait for systemd to be ready
+      ansible.builtin.command: systemctl status
+      register: systemd_status
+      retries: 10
+      delay: 2
+      until: systemd_status.rc == 0
+      changed_when: false
+      ignore_errors: true
+
+    - name: Install Python3 for Ansible
+      ansible.builtin.raw: |
+        apt-get update && apt-get install -y python3 python3-pip sudo
+      changed_when: true

@@ -1,0 +1,50 @@
+---
+- name: Verify agent-setup role
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Check agent user exists
+      ansible.builtin.command: id build-agent
+      register: user_result
+      changed_when: false
+
+    - name: Assert agent user created
+      ansible.builtin.assert:
+        that: "'build-agent' in user_result.stdout"
+        fail_msg: "agent user was NOT created ❌"
+        success_msg: "agent user exists ✅"
+
+    - name: Check work directory exists
+      ansible.builtin.stat:
+        path: /opt/build-agent
+      register: work_dir
+
+    - name: Assert work directory created
+      ansible.builtin.assert:
+        that: work_dir.stat.exists
+        fail_msg: "work directory does NOT exist ❌"
+        success_msg: "work directory exists ✅"
+
+    - name: Check agent config exists
+      ansible.builtin.stat:
+        path: /opt/build-agent/.agent-config
+      register: agent_config
+
+    - name: Assert agent config created
+      ansible.builtin.assert:
+        that: agent_config.stat.exists
+        fail_msg: "agent config was NOT created ❌"
+        success_msg: "agent config exists ✅"
+
+    - name: Check config file permissions are secure
+      ansible.builtin.stat:
+        path: /opt/build-agent/.agent-config
+      register: config_perms
+
+    - name: Assert config is not world-readable
+      ansible.builtin.assert:
+        that: "config_perms.stat.mode == '0600'"
+        fail_msg: "config file permissions are insecure ❌"
+        success_msg: "config file permissions are secure (0600) ✅"

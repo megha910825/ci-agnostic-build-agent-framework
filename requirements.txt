@@ -1,5 +1,6 @@
 # Python agent specific extras
 # Base packages already installed in build-agent:base image
+# DO NOT reference ../base/requirements.txt here — that path doesn't exist inside Docker
 pylint
 bandit
 mypy

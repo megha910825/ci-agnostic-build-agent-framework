@@ -19,7 +19,7 @@ class TestAgentSecurity:
         result = run_in_container("build-agent:base", "whoami")
         assert result.returncode == 0
         assert result.stdout.strip() == "agent", \
-            f"Expected 'agent' user, got: {result.stdout.strip()}"
+            "Expected 'agent' user, got: {result.stdout.strip()}"
 
     def test_agent_uid_nonzero(self):
         """agent user UID must not be 0 (root)"""

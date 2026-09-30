@@ -6,6 +6,9 @@ LABEL description="CI-agnostic base build agent"
 # Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Set shell to explicitly use bash with pipefail
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Install base dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends\
     curl \
@@ -20,11 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends\
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 # Install Docker CLI (not daemon — uses host socket)
-RUN set -o pipefail && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
     | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) \
     signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \

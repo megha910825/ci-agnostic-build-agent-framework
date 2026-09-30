@@ -10,7 +10,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install base dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends\
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     curl \
     git \
     wget \

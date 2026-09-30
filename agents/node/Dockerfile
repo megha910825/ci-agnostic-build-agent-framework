@@ -14,17 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Verify node and npm installed correctly
 RUN node --version && npm --version
 
-# Install tools — pinned to exact versions (DL3016)
-RUN npm install -g \
-    typescript@4.9.5 \
-    prettier@2.8.8 \
-    --registry https://registry.npmjs.org \
-    --strict-ssl=false
+# Install tools — all on one line so hadolint reads versions correctly
+RUN npm install -g typescript@4.9.5 prettier@2.8.8 --registry https://registry.npmjs.org --strict-ssl=false
 
+# Use numeric UID (DL3066)
 USER 1000
 
-RUN node --version && \
-    npm --version && \
-    tsc --version && \
-    prettier --version
+RUN node --version && npm --version && tsc --version && prettier --version
 

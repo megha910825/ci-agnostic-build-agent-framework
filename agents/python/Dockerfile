@@ -6,7 +6,7 @@ LABEL description="CI-agnostic Python build agent"
 USER root
 
 # Install Python tooling
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     python3-dev \
     build-essential \

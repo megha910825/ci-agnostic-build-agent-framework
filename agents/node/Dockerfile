@@ -5,26 +5,26 @@ LABEL description="CI-agnostic Node.js build agent"
 
 USER root
 
-# Install nodejs + npm directly from Ubuntu apt
-# Corporate network blocks nodesource and nodejs.org
-# Ubuntu 22.04 ships Node 12 — sufficient for portfolio demo
-# In CI/production environments this builds with Node 20 via nodesource
-RUN apt-get update && apt-get install -y \
+# Install nodejs + npm from Ubuntu apt
+RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify node and npm
+# Verify node and npm installed correctly
 RUN node --version && npm --version
 
+# Install tools — pinned to exact versions (DL3016)
 RUN npm install -g \
     typescript@4.9.5 \
     prettier@2.8.8 \
     --registry https://registry.npmjs.org \
     --strict-ssl=false
 
-USER agent
+USER 1000
 
-# Verify tools
-RUN node --version && npm --version && tsc --version && \
+RUN node --version && \
+    npm --version && \
+    tsc --version && \
     prettier --version
+

@@ -7,7 +7,7 @@ LABEL description="CI-agnostic base build agent"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install base dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends\
     curl \
     git \
     wget \
@@ -21,7 +21,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker CLI (not daemon — uses host socket)
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+RUN set -o pipefail && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
     | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) \
     signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
@@ -29,7 +30,7 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
     $(lsb_release -cs) stable" \
     | tee /etc/apt/sources.list.d/docker.list > /dev/null \
     && apt-get update \
-    && apt-get install -y docker-ce-cli \
+    && apt-get install -y -no-install-recommends docker-ce-cli \
     && rm -rf /var/lib/apt/lists/*
 
 

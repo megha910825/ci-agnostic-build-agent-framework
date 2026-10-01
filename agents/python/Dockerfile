@@ -14,10 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Python build + test tools
 RUN pip3 install --no-cache-dir \
-    --index-url https://pypi.org/simple/ \
-    --trusted-host pypi.org \
-    --trusted-host files.pythonhosted.org \
-    --trusted-host pypi.python.org \
+    --timeout 120 \
+    --retries 3 \
     pytest==8.0.0 \
     pytest-cov==4.1.0 \
     black==24.1.1 \
@@ -28,10 +26,8 @@ RUN pip3 install --no-cache-dir \
 # Copy Python agent requirements
 COPY requirements.txt /home/agent/requirements-python.txt
 RUN pip3 install --no-cache-dir \
-    --index-url https://pypi.org/simple/ \
-    --trusted-host pypi.org \
-    --trusted-host files.pythonhosted.org \
-    --trusted-host pypi.python.org \
+    --timeout 120 \
+    --retries 3 \
     -r /home/agent/requirements-python.txt
 
 USER agent

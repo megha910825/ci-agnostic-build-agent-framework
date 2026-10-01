@@ -6,7 +6,7 @@ LABEL description="CI-agnostic Java build agent"
 USER root
 
 # Install JDK 17
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends\
     openjdk-17-jdk \
     maven \
     && rm -rf /var/lib/apt/lists/*

@@ -19,21 +19,25 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: agents/base/Dockerfile
+          config: .hadolint.yaml
 
       - name: Lint python Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: agents/python/Dockerfile
+          config: .hadolint.yaml
 
       - name: Lint node Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: agents/node/Dockerfile
+          config: .hadolint.yaml
 
       - name: Lint java Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: agents/java/Dockerfile
+          config: .hadolint.yaml
 
   build-and-test:
     name: Build Images and Run Tests

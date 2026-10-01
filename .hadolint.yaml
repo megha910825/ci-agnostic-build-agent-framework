@@ -2,8 +2,8 @@
 # Rules ignored across all Dockerfiles in this project
 
 ignore:
-  - DL3008   # apt version pinning — impractical across Ubuntu releases
-  - DL3009   # apt cache deletion — we already do this
-  - DL3013   # pip version pinning — handled separately
-  - DL3016   # npm version pinning — versions ARE pinned, hadolint parser bug
-  - DL3066   # numeric user ID — we use named user for readability
+  - DL3008
+  - DL3009
+  - DL3013
+  - DL3016
+  - DL3066

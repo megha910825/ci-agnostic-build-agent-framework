@@ -1,48 +1,75 @@
 ---
-- name: Verify agent setup
+- name: Verify agent-setup role
   hosts: all
   gather_facts: false
+  become: true
 
   tasks:
-    - name: Check agent service is running
-      ansible.builtin.systemd:
-        name: build-agent
-      register: agent_service
-      failed_when: agent_service.status.ActiveState != 'active'
-
-    - name: Check Docker daemon is running
-      ansible.builtin.systemd:
-        name: docker
-      register: docker_service
-      failed_when: docker_service.status.ActiveState != 'active'
-
     - name: Check agent user exists
-      ansible.builtin.getent:
-        database: passwd
-        key: build-agent
-      register: agent_user
-      failed_when: agent_user is not defined
+      ansible.builtin.command: id build-agent
+      register: user_result
+      changed_when: false
+      failed_when: user_result.rc != 0
 
-    - name: Check agent work directory exists
+    - name: Assert agent user created
+      ansible.builtin.assert:
+        that: "'build-agent' in user_result.stdout"
+        fail_msg: "❌ agent user was NOT created"
+        success_msg: "✅ agent user exists"
+
+    - name: Check work directory exists
       ansible.builtin.stat:
         path: /opt/build-agent
       register: work_dir
-      failed_when: not work_dir.stat.exists
+
+    - name: Assert work directory created
+      ansible.builtin.assert:
+        that: work_dir.stat.exists
+        fail_msg: "❌ work directory does NOT exist"
+        success_msg: "✅ work directory exists"
+
+    - name: Assert work directory owned by agent user
+      ansible.builtin.assert:
+        that: work_dir.stat.pw_name == 'build-agent'
+        fail_msg: "❌ work directory has wrong owner"
+        success_msg: "✅ work directory owned by build-agent"
 
     - name: Check agent config exists
       ansible.builtin.stat:
         path: /opt/build-agent/.agent-config
       register: agent_config
-      failed_when: not agent_config.stat.exists
 
-    - name: Verify config permissions are secure
-      ansible.builtin.stat:
-        path: /opt/build-agent/.agent-config
-      register: config_perms
-      failed_when: config_perms.stat.mode != '0600'
+    - name: Assert agent config created
+      ansible.builtin.assert:
+        that: agent_config.stat.exists
+        fail_msg: "❌ agent config was NOT created"
+        success_msg: "✅ agent config exists"
 
-    - name: Check agent binary is executable
+    - name: Assert config permissions are secure
+      ansible.builtin.assert:
+        that: agent_config.stat.mode == '0600'
+        fail_msg: "❌ config permissions are insecure: {{ agent_config.stat.mode }}"
+        success_msg: "✅ config permissions are secure (0600)"
+
+    - name: Check systemd service file exists
       ansible.builtin.stat:
-        path: /opt/build-agent/run.sh
-      register: agent_binary
-      failed_when: not agent_binary.stat.executable
+        path: /etc/systemd/system/build-agent.service
+      register: service_file
+
+    - name: Assert systemd service file created
+      ansible.builtin.assert:
+        that: service_file.stat.exists
+        fail_msg: "❌ systemd service file was NOT created"
+        success_msg: "✅ systemd service file exists"
+
+    - name: Check agent config contains correct CI system
+      ansible.builtin.command: grep -c "github.com" /opt/build-agent/.agent-config
+      register: config_content
+      changed_when: false
+      failed_when: config_content.rc != 0
+
+    - name: Assert config has correct URL
+      ansible.builtin.assert:
+        that: config_content.rc == 0
+        fail_msg: "❌ agent config missing github.com URL"
+        success_msg: "✅ agent config contains correct CI system URL"

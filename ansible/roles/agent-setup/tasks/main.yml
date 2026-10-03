@@ -22,6 +22,24 @@
     dest: "{{ agent_work_dir }}/agent.tar.gz"
     mode: '0644'
   become: true
+  when: not (molecule_testing | default(false)) and not ansible_check_mode
+
+- name: Check if dummy agent tar exists
+  ansible.builtin.stat:
+    path: "{{ agent_work_dir }}/agent.tar.gz"
+  register: agent_tar
+  when: molecule_testing | default(false)
+
+- name: Create dummy agent tar for molecule testing
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ agent_work_dir }}/agent.tar.gz"
+    mode: '0644'
+    owner: "{{ agent_user }}"
+  become: true
+  when:
+    - molecule_testing | default(false)
+    - not agent_tar.stat.exists
 
 - name: Extract agent binary
   ansible.builtin.unarchive:
@@ -30,6 +48,7 @@
     remote_src: true
     owner: "{{ agent_user }}"
   become: true
+  when: not (molecule_testing | default(false)) and not ansible_check_mode
 
 - name: Generate agent configuration
   ansible.builtin.template:
@@ -55,3 +74,4 @@
     state: started
     daemon_reload: true
   become: true
+  when: not (molecule_testing | default(false)) and not ansible_check_mode

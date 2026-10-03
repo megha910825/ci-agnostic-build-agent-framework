@@ -1,0 +1,19 @@
+---
+- name: Converge — test agent-setup role
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    ci_system: github-actions
+    agent_user: build-agent
+    agent_work_dir: /opt/build-agent
+    agent_version: "2.311.0"
+    agent_token: "test-token-molecule"
+    github_actions_url: "https://github.com"
+    harden_agent: false
+    molecule_testing: true
+
+  roles:
+    - role: agent-setup
+

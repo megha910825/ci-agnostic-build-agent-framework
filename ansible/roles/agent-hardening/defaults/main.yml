@@ -1,0 +1,3 @@
+---
+agent_user: build-agent
+agent_work_dir: /opt/build-agent

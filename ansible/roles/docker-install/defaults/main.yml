@@ -1,0 +1,3 @@
+---
+agent_user: build-agent
+docker_version: "24.0"

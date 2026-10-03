@@ -6,7 +6,7 @@ ci_system: github-actions
 # Agent settings
 agent_user: build-agent
 agent_work_dir: /opt/build-agent
-agent_version: "3.227.1"
+agent_version: "2.311.0"
 
 # Docker settings
 docker_enabled: true
@@ -16,13 +16,15 @@ docker_version: "24.0"
 harden_agent: true
 agent_readonly_fs: false
 
-# Download URLs per CI system
+# CI system URLs — override agent_token at runtime
+github_actions_url: "https://github.com"
+azure_devops_url: "https://dev.azure.com/your-org"
+teamcity_server_url: "http://your-teamcity-server:8111"
+agent_pool_name: "Default"
+agent_token: ""
+
+# Download URLs per CI system — single line, no spaces
 agent_download_url:
-  github-actions: >
-    https://github.com/actions/runner/releases/download/
-    v{{ agent_version }}/actions-runner-linux-x64-{{ agent_version }}.tar.gz
-  azure-pipelines: >
-    https://vstsagentpackage.azureedge.net/agent/
-    {{ agent_version }}/vsts-agent-linux-x64-{{ agent_version }}.tar.gz
-  teamcity: >
-    https://your-teamcity-server/update/buildAgentFull.zip
+  github-actions: "https://github.com/actions/runner/releases/download/v{{ agent_version }}/actions-runner-linux-x64-{{ agent_version }}.tar.gz"
+  azure-pipelines: "https://vstsagentpackage.azureedge.net/agent/{{ agent_version }}/vsts-agent-linux-x64-{{ agent_version }}.tar.gz"
+  teamcity: "http://your-teamcity-server/update/buildAgentFull.zip"

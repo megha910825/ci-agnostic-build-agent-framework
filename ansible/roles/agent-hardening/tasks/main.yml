@@ -1,4 +1,11 @@
 ---
+- name: Ensure openssh-server is installed
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+    update_cache: true
+  become: true
+
 - name: Disable SSH password authentication
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
@@ -7,6 +14,7 @@
     state: present
   become: true
   notify: restart sshd
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Set agent directory permissions
   ansible.builtin.file:
@@ -16,6 +24,7 @@
     mode: '0750'
     recurse: true
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restrict agent config file permissions
   ansible.builtin.file:
@@ -38,6 +47,7 @@
     enabled: true
     state: started
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Set up UFW firewall — allow SSH only
   community.general.ufw:
@@ -45,9 +55,11 @@
     port: '22'
     proto: tcp
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Enable UFW
   community.general.ufw:
     state: enabled
     policy: deny
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"

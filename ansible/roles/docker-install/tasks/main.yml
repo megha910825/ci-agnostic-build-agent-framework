@@ -18,15 +18,16 @@
     creates: /usr/share/keyrings/docker-archive-keyring.gpg
   become: true
 
-- name: Add Docker apt repository
-  ansible.builtin.apt_repository:
-    repo: >
-      deb [arch=amd64
-      signed-by=/usr/share/keyrings/docker-archive-keyring.gpg]
-      https://download.docker.com/linux/ubuntu
-      {{ ansible_distribution_release }} stable
+- name: Add Docker apt repository (deb822 format)
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/ubuntu
+    suites: "{{ ansible_distribution_release }}"
+    components: stable
+    architectures: amd64
+    signed_by: /usr/share/keyrings/docker-archive-keyring.gpg
     state: present
-    filename: docker
   become: true
 
 - name: Install Docker CE
@@ -52,3 +53,4 @@
     enabled: true
     state: started
   become: true
+  ignore_errors: "{{ ansible_check_mode }}"

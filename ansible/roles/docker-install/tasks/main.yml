@@ -6,6 +6,7 @@
       - curl
       - gnupg
       - lsb-release
+      - python3-debian
     state: present
     update_cache: true
   become: true
@@ -18,7 +19,7 @@
     creates: /usr/share/keyrings/docker-archive-keyring.gpg
   become: true
 
-- name: Add Docker apt repository (deb822 format)
+- name: Add Docker apt repository
   ansible.builtin.deb822_repository:
     name: docker
     types: deb
@@ -53,4 +54,8 @@
     enabled: true
     state: started
   become: true
-  ignore_errors: "{{ ansible_check_mode }}"
+  # systemd not fully available in all containers
+  ignore_errors: "{{ ansible_check_mode or (molecule_testing | default(false)) }}"
+  changed_when: false
+  when: not (molecule_testing | default(false))
+

@@ -1,0 +1,63 @@
+---
+- name: Verify docker-install role
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Check docker-ce is installed
+      ansible.builtin.command: dpkg -l docker-ce
+      register: docker_installed
+      changed_when: false
+      failed_when: docker_installed.rc != 0
+
+    - name: Assert docker-ce installed
+      ansible.builtin.assert:
+        that: "'docker-ce' in docker_installed.stdout"
+        fail_msg: "docker-ce is NOT installed"
+        success_msg: "docker-ce is installed"
+
+    - name: Check docker CLI is available
+      ansible.builtin.command: which docker
+      register: docker_cli
+      changed_when: false
+      failed_when: docker_cli.rc != 0
+
+    - name: Assert docker CLI available
+      ansible.builtin.assert:
+        that: "'/docker' in docker_cli.stdout"
+        fail_msg: "docker CLI not found"
+        success_msg: "docker CLI available at {{ docker_cli.stdout }}"
+
+    - name: Check Docker GPG key exists
+      ansible.builtin.stat:
+        path: /usr/share/keyrings/docker-archive-keyring.gpg
+      register: gpg_key
+
+    - name: Assert Docker GPG key exists
+      ansible.builtin.assert:
+        that: gpg_key.stat.exists
+        fail_msg: "Docker GPG key not found"
+        success_msg: "Docker GPG key exists"
+
+    - name: Check Docker apt repo is configured
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list.d/docker.sources
+      register: docker_repo
+
+    - name: Assert Docker repo configured
+      ansible.builtin.assert:
+        that: docker_repo.stat.exists
+        fail_msg: "Docker apt repo not configured"
+        success_msg: "Docker apt repo configured"
+
+    - name: Check build-agent user is in docker group
+      ansible.builtin.command: groups build-agent
+      register: user_groups
+      changed_when: false
+
+    - name: Assert build-agent in docker group
+      ansible.builtin.assert:
+        that: "'docker' in user_groups.stdout"
+        fail_msg: "build-agent NOT in docker group"
+        success_msg: "build-agent is in docker group"

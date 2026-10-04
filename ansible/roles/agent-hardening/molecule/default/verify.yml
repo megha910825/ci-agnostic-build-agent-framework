@@ -1,0 +1,76 @@
+---
+- name: Verify agent-hardening role
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Check SSH password auth is disabled
+      ansible.builtin.command: >
+        grep "^PasswordAuthentication no" /etc/ssh/sshd_config
+      register: ssh_config
+      changed_when: false
+      failed_when: ssh_config.rc != 0
+
+    - name: Assert SSH password auth disabled
+      ansible.builtin.assert:
+        that: ssh_config.rc == 0
+        fail_msg: "❌ SSH password authentication is NOT disabled"
+        success_msg: "✅ SSH password authentication is disabled"
+
+    - name: Check agent directory permissions
+      ansible.builtin.stat:
+        path: /opt/build-agent
+      register: work_dir
+
+    - name: Assert directory permissions are 0750
+      ansible.builtin.assert:
+        that: work_dir.stat.mode == '0750'
+        fail_msg: "❌ work dir permissions wrong: {{ work_dir.stat.mode }}"
+        success_msg: "✅ work dir permissions correct (0750)"
+
+    - name: Assert directory owned by build-agent
+      ansible.builtin.assert:
+        that: work_dir.stat.pw_name == 'build-agent'
+        fail_msg: "❌ work dir has wrong owner: {{ work_dir.stat.pw_name }}"
+        success_msg: "✅ work dir owned by build-agent"
+
+    - name: Check agent config permissions
+      ansible.builtin.stat:
+        path: /opt/build-agent/.agent-config
+      register: config_file
+
+    - name: Assert config permissions are 0600
+      ansible.builtin.assert:
+        that: config_file.stat.mode == '0600'
+        fail_msg: "❌ config permissions wrong: {{ config_file.stat.mode }}"
+        success_msg: "✅ config permissions secure (0600)"
+
+    - name: Check fail2ban is installed
+      ansible.builtin.command: dpkg -l fail2ban
+      register: fail2ban
+      changed_when: false
+      failed_when: fail2ban.rc != 0
+
+    - name: Assert fail2ban installed
+      ansible.builtin.assert:
+        that: "'fail2ban' in fail2ban.stdout"
+        fail_msg: "❌ fail2ban is NOT installed"
+        success_msg: "✅ fail2ban is installed"
+
+    - name: Check UFW is active
+      ansible.builtin.command: ufw status
+      register: ufw_status
+      changed_when: false
+
+    - name: Assert UFW is active
+      ansible.builtin.assert:
+        that: "'active' in ufw_status.stdout"
+        fail_msg: "❌ UFW is NOT active"
+        success_msg: "✅ UFW is active"
+
+    - name: Assert UFW allows SSH
+      ansible.builtin.assert:
+        that: "'22' in ufw_status.stdout"
+        fail_msg: "❌ UFW is not allowing SSH on port 22"
+        success_msg: "✅ UFW allows SSH on port 22"

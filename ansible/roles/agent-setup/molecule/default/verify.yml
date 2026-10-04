@@ -14,8 +14,8 @@
     - name: Assert agent user created
       ansible.builtin.assert:
         that: "'build-agent' in user_result.stdout"
-        fail_msg: "❌ agent user was NOT created"
-        success_msg: "✅ agent user exists"
+        fail_msg: " agent user was NOT created"
+        success_msg: " agent user exists"
 
     - name: Check work directory exists
       ansible.builtin.stat:
@@ -25,14 +25,14 @@
     - name: Assert work directory created
       ansible.builtin.assert:
         that: work_dir.stat.exists
-        fail_msg: "❌ work directory does NOT exist"
-        success_msg: "✅ work directory exists"
+        fail_msg: " work directory does NOT exist"
+        success_msg: " work directory exists"
 
     - name: Assert work directory owned by agent user
       ansible.builtin.assert:
         that: work_dir.stat.pw_name == 'build-agent'
-        fail_msg: "❌ work directory has wrong owner"
-        success_msg: "✅ work directory owned by build-agent"
+        fail_msg: " work directory has wrong owner"
+        success_msg: " work directory owned by build-agent"
 
     - name: Check agent config exists
       ansible.builtin.stat:
@@ -42,14 +42,14 @@
     - name: Assert agent config created
       ansible.builtin.assert:
         that: agent_config.stat.exists
-        fail_msg: "❌ agent config was NOT created"
-        success_msg: "✅ agent config exists"
+        fail_msg: " agent config was NOT created"
+        success_msg: " agent config exists"
 
     - name: Assert config permissions are secure
       ansible.builtin.assert:
         that: agent_config.stat.mode == '0600'
-        fail_msg: "❌ config permissions are insecure: {{ agent_config.stat.mode }}"
-        success_msg: "✅ config permissions are secure (0600)"
+        fail_msg: " config permissions are insecure: {{ agent_config.stat.mode }}"
+        success_msg: " config permissions are secure (0600)"
 
     - name: Check systemd service file exists
       ansible.builtin.stat:
@@ -59,8 +59,8 @@
     - name: Assert systemd service file created
       ansible.builtin.assert:
         that: service_file.stat.exists
-        fail_msg: "❌ systemd service file was NOT created"
-        success_msg: "✅ systemd service file exists"
+        fail_msg: " systemd service file was NOT created"
+        success_msg: " systemd service file exists"
 
     - name: Check agent config contains correct CI system
       ansible.builtin.command: grep -c "github.com" /opt/build-agent/.agent-config
@@ -71,5 +71,5 @@
     - name: Assert config has correct URL
       ansible.builtin.assert:
         that: config_content.rc == 0
-        fail_msg: "❌ agent config missing github.com URL"
-        success_msg: "✅ agent config contains correct CI system URL"
+        fail_msg: "agent config missing github.com URL"
+        success_msg: "agent config contains correct CI system URL"

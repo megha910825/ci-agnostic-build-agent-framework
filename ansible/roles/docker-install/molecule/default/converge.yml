@@ -1,0 +1,21 @@
+---
+- name: Converge — test docker-install role
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    agent_user: build-agent
+    molecule_testing: true
+
+  pre_tasks:
+    - name: Create build-agent user for testing
+      ansible.builtin.user:
+        name: build-agent
+        system: true
+        shell: /bin/bash
+        create_home: true
+      become: true
+
+  roles:
+    - role: docker-install

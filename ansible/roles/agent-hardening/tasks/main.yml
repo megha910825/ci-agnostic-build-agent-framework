@@ -14,7 +14,6 @@
     state: present
   become: true
   notify: restart sshd
-  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Set agent directory permissions
   ansible.builtin.file:
@@ -24,7 +23,6 @@
     mode: '0750'
     recurse: true
   become: true
-  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restrict agent config file permissions
   ansible.builtin.file:
@@ -32,9 +30,8 @@
     owner: "{{ agent_user | default('build-agent') }}"
     mode: '0600'
   become: true
-  ignore_errors: true
 
-- name: Install fail2ban for brute force protection
+- name: Install fail2ban
   ansible.builtin.apt:
     name: fail2ban
     state: present
@@ -47,19 +44,19 @@
     enabled: true
     state: started
   become: true
-  ignore_errors: "{{ ansible_check_mode }}"
+  ignore_errors: "{{ molecule_testing | default(false) }}"
+  changed_when: false
+  when: not (molecule_testing | default(false))
 
-- name: Set up UFW firewall — allow SSH only
+- name: Allow SSH through UFW
   community.general.ufw:
     rule: allow
     port: '22'
     proto: tcp
   become: true
-  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Enable UFW
   community.general.ufw:
     state: enabled
     policy: deny
   become: true
-  ignore_errors: "{{ ansible_check_mode }}"

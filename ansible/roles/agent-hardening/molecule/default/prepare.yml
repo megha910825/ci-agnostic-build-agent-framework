@@ -1,0 +1,47 @@
+---
+- name: Prepare container for hardening tests
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Wait for systemd to be ready
+      ansible.builtin.command: systemctl is-system-running
+      register: systemd_status
+      retries: 10
+      delay: 3
+      until: systemd_status.stdout in ['running', 'degraded']
+      changed_when: false
+      ignore_errors: true
+
+    - name: Install base packages
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+          - sudo
+          - openssh-server
+          - ufw
+        state: present
+        update_cache: true
+
+    - name: Create build-agent user
+      ansible.builtin.user:
+        name: build-agent
+        system: true
+        shell: /bin/bash
+        create_home: true
+
+    - name: Create agent work directory
+      ansible.builtin.file:
+        path: /opt/build-agent
+        state: directory
+        owner: build-agent
+        mode: '0755'
+
+    - name: Create dummy agent config
+      ansible.builtin.copy:
+        content: "url=https://github.com\ntoken=test\n"
+        dest: /opt/build-agent/.agent-config
+        owner: build-agent
+        mode: '0644'

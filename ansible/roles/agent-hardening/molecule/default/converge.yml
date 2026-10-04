@@ -1,0 +1,13 @@
+---
+- name: Converge — test agent-hardening role
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    agent_user: build-agent
+    agent_work_dir: /opt/build-agent
+    molecule_testing: true
+
+  roles:
+    - role: agent-hardening

@@ -1,3 +1,4 @@
+---
 name: Molecule Tests
 
 on:
@@ -14,10 +15,12 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false        # if one role fails, others still run
+      fail-fast: false
       matrix:
         role:
           - agent-setup
+          - docker-install
+          - agent-hardening
 
     steps:
       - name: Checkout
@@ -31,18 +34,17 @@ jobs:
       - name: Install Molecule + dependencies
         run: |
           pip install \
-            molecule \
-            molecule-docker \
-            ansible \
-            ansible-lint \
-            pytest \
-            pytest-testinfra
+            "ansible-core==2.15.13" \
+            "molecule==6.0.3" \
+            "molecule-docker==2.1.0" \
+            "ansible-lint==24.2.3"
 
       - name: Install Ansible collections
         run: |
           ansible-galaxy collection install \
             community.general \
-            community.docker
+            community.docker \
+            ansible.posix
 
       - name: Run Molecule tests — ${{ matrix.role }}
         run: |
@@ -52,4 +54,3 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           MOLECULE_NO_LOG: 'false'
-

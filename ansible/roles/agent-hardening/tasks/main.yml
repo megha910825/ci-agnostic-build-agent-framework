@@ -21,8 +21,14 @@
     owner: "{{ agent_user | default('build-agent') }}"
     group: "{{ agent_user | default('build-agent') }}"
     mode: '0750'
-    recurse: true
   become: true
+
+- name: Fix ownership recursively using shell (idempotent via changed_when)
+  ansible.builtin.command: >
+    chown -R {{ agent_user | default('build-agent') }}:{{ agent_user | default('build-agent') }}
+    {{ agent_work_dir | default('/opt/build-agent') }}
+  become: true
+  changed_when: false
 
 - name: Restrict agent config file permissions
   ansible.builtin.file:
@@ -30,6 +36,7 @@
     owner: "{{ agent_user | default('build-agent') }}"
     mode: '0600'
   become: true
+  ignore_errors: true
 
 - name: Install fail2ban
   ansible.builtin.apt:

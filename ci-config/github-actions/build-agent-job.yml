@@ -1,0 +1,27 @@
+# =============================================================================
+# GitHub Actions — Sample job using this framework's self-hosted agent
+# Copy this into your own .github/workflows/ directory
+# =============================================================================
+name: Build with Self-Hosted Agent
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: self-hosted          # ← agent provisioned by this framework
+    container:
+      image: build-agent:python   # options: base | python | node | java
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Lint
+        run: flake8 .

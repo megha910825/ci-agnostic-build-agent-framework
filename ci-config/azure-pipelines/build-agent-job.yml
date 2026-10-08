@@ -1,0 +1,31 @@
+# =============================================================================
+# Azure Pipelines — Sample pipeline using this framework's self-hosted agent
+# Copy this as your azure-pipelines.yml
+# =============================================================================
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: SelfHosted-AgentPool      # ← pool provisioned by this framework
+
+container:
+  image: build-agent:python       # options: base | python | node | java
+
+steps:
+  - checkout: self
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.11'
+
+  - script: |
+      pip install -r requirements.txt
+      pytest tests/ -v --junitxml=test-results.xml
+    displayName: Run Tests
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: 'test-results.xml'
+    condition: always()

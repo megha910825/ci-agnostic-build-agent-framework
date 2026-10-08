@@ -1,0 +1,36 @@
+# =============================================================================
+# Azure Pipelines — Register a new self-hosted agent
+# Run once to provision a new agent host via Ansible
+# Requires: AGENT_TOKEN variable group in Azure DevOps library
+# =============================================================================
+trigger: none                     # manual trigger only
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: agent-provisioning     # contains AGENT_TOKEN, AGENT_HOST
+
+steps:
+  - checkout: self
+
+  - script: pip install ansible
+    displayName: Install Ansible
+
+  - script: |
+      ansible-galaxy collection install \
+        community.general \
+        community.docker \
+        ansible.posix
+    displayName: Install Ansible Collections
+
+  - script: |
+      ansible-playbook ansible/playbook.yml \
+        -i "$(AGENT_HOST)," \
+        -e "ci_system=azure-pipelines" \
+        -e "agent_token=$(AGENT_TOKEN)" \
+        -e "azure_devops_url=$(AZURE_DEVOPS_URL)" \
+        --private-key ~/.ssh/agent_key
+    displayName: Provision Agent
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: 'false'

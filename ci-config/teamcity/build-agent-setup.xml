@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TeamCity — Build Agent Setup Configuration
+  Import this into TeamCity via Administration > Build Agents
+  Agent provisioned by ci-agnostic-build-agent-framework
+-->
+<build-agent-config>
+  <agent>
+    <name>ci-agnostic-build-agent</name>
+    <workDir>/opt/build-agent/work</workDir>
+    <tempDir>/opt/build-agent/temp</tempDir>
+    <systemDir>/opt/build-agent/system</systemDir>
+
+    <!-- Agent capabilities auto-detected by TeamCity -->
+    <properties>
+      <property name="docker.version"   value="24.0"/>
+      <property name="python.version"   value="3.11"/>
+      <property name="node.version"     value="20"/>
+      <property name="java.version"     value="17"/>
+      <property name="agent.framework"  value="ci-agnostic-build-agent-framework"/>
+    </properties>
+  </agent>
+
+  <!--
+    To register this agent with TeamCity server:
+
+    1. Set teamcity_server_url in ansible/roles/agent-setup/defaults/main.yml
+    2. Run: ansible-playbook ansible/playbook.yml \
+              -e "ci_system=teamcity" \
+              -e "agent_token=<your-token>"
+    3. Approve the agent in TeamCity UI:
+       Administration > Build Agents > Unauthorized Agents
+  -->
+</build-agent-config>

@@ -1,0 +1,50 @@
+# =============================================================================
+# GitHub Actions — Register a new self-hosted runner
+# Run this workflow once to bootstrap a new agent host
+# Requires: AGENT_TOKEN secret set in repo settings
+# =============================================================================
+name: Register Self-Hosted Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent_host:
+        description: 'Agent host IP or hostname'
+        required: true
+      ci_system:
+        description: 'CI system'
+        required: true
+        default: 'github-actions'
+        type: choice
+        options:
+          - github-actions
+          - azure-pipelines
+          - teamcity
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy collection install \
+            community.general \
+            community.docker \
+            ansible.posix
+
+      - name: Run provisioning playbook
+        run: |
+          ansible-playbook ansible/playbook.yml \
+            -i "${{ inputs.agent_host }}," \
+            -e "ci_system=${{ inputs.ci_system }}" \
+            -e "agent_token=${{ secrets.AGENT_TOKEN }}" \
+            --private-key ~/.ssh/agent_key
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'false'
